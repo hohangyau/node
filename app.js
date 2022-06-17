@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 var mysql = require('mysql');
 const port = 3000;
-
+app.use(express.json())
 var con = mysql.createConnection({
     host: "mydb-awssql.cy4oinulfb9u.us-east-1.rds.amazonaws.com",
     user: "admin",
@@ -12,8 +12,6 @@ var con = mysql.createConnection({
   con.connect(function(err) {
     if (err) throw err;
     console.log("Connected!");
-    //var sql = "CREATE TABLE students (id INT NOT NULL AUTO_INCREMENT, firstName VARCHAR(255), lastName VARCHAR(255), class VARCHAR(15), nationality VARCHAR(255), PRIMARY KEY (id))";
-  //  var sql = "INSERT INTO students (id, firstName, lastName, class, nationality) VALUES (223445,'Mike', 'Wong', '3A', 'Singapore')" ;
   });
 
 
@@ -55,11 +53,31 @@ app.get('/fetchStudents', async (req, res) => {
         let data = await executeSQL(sql);
         res.send(data)
     }
-
-
 })
 
-app.listen(port, () => {            //server starts listening for any attempts from a client to connect at port: {port}
+app.post('/addStudent', async (req, res) => {
+    const {firstName, lastName, cla, nationality} = {...req.body};
+    let query = `INSERT INTO students 
+    (firstName, lastName,class,nationality ) VALUES ( "${firstName}", "${lastName}" , "${cla}" , "${nationality}")`;
+    let data = await executeSQL(query);
+    res.send(data)
+})
+
+app.delete('/removeStudent', async (req, res) => {
+    const {id} = {...req.body};
+
+    if(typeof id !== 'undefined'){
+        let query = `DELETE FROM students where id = ${id}`
+         let data = await executeSQL(query);
+         res.send(data)
+    }else{
+        res.status(400).send("please provide student id")
+    }
+
+    
+
+})
+app.listen(port, () => {           
     console.log(`Now listening on port ${port}`); 
 });
 
